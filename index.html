@@ -6,7 +6,6 @@
 
   <title>Purple QR Generator</title>
 
-  <!-- QR Code Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
@@ -19,7 +18,7 @@
 
     body {
       min-height: 100vh;
-      background: #ffffff;
+      background: white;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -54,7 +53,7 @@
       border-radius: 10px;
       outline: none;
       font-size: 16px;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
     input:focus {
@@ -68,7 +67,6 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
     }
 
     .generate-btn {
@@ -93,25 +91,31 @@
       color: white;
     }
 
-    #qrcode {
-      margin: 25px auto 0;
+    #preview {
+      margin-top: 25px;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
     }
 
-    #qrcode canvas {
-      padding: 10px;
-      background: white;
-      border: 3px solid #7b2cbf;
-      border-radius: 10px;
+    #qrcode {
+      display: flex;
+      justify-content: center;
     }
 
-    #qrcode img {
-      padding: 10px;
-      background: white;
+    #qrcode canvas {
       border: 3px solid #7b2cbf;
       border-radius: 10px;
+      padding: 10px;
+      background: white;
+    }
+
+    #qrLabel {
+      margin-top: 10px;
+      color: #7b2cbf;
+      font-size: 18px;
+      font-weight: bold;
+      word-break: break-word;
     }
 
     .hidden {
@@ -136,17 +140,32 @@
       Turn any link or text into a QR code
     </p>
 
+    <!-- Link/Text -->
     <input
       type="text"
       id="qrText"
       placeholder="Paste a link or enter text..."
     >
 
+    <!-- Label -->
+    <input
+      type="text"
+      id="labelText"
+      placeholder="Enter subtitle e.g. My Website"
+    >
+
     <button class="generate-btn" onclick="generateQR()">
       Generate QR Code
     </button>
 
-    <div id="qrcode"></div>
+    <!-- QR Preview -->
+    <div id="preview" class="hidden">
+
+      <div id="qrcode"></div>
+
+      <div id="qrLabel"></div>
+
+    </div>
 
     <button
       id="downloadBtn"
@@ -162,13 +181,18 @@
 
   </div>
 
+
   <script>
 
-    // Generate QR Code
     function generateQR() {
 
       const text = document.getElementById("qrText").value.trim();
+      const label = document.getElementById("labelText").value.trim();
+
       const qrContainer = document.getElementById("qrcode");
+      const qrLabel = document.getElementById("qrLabel");
+
+      const preview = document.getElementById("preview");
       const downloadBtn = document.getElementById("downloadBtn");
 
       if (text === "") {
@@ -176,10 +200,10 @@
         return;
       }
 
-      // Clear previous QR code
+      // Clear previous QR
       qrContainer.innerHTML = "";
 
-      // Create QR code
+      // Create QR
       new QRCode(qrContainer, {
         text: text,
         width: 220,
@@ -189,68 +213,90 @@
         correctLevel: QRCode.CorrectLevel.H
       });
 
-      // Show download button
+      // Display subtitle
+      qrLabel.textContent = label;
+
+      // Show preview and download button
+      preview.classList.remove("hidden");
       downloadBtn.classList.remove("hidden");
     }
 
 
-    // Download QR Code
     function downloadQR() {
 
-      const qrContainer = document.getElementById("qrcode");
+      const canvas = document.querySelector("#qrcode canvas");
 
-      // QRCode.js normally creates a canvas
-      const canvas = qrContainer.querySelector("canvas");
-
-      if (canvas) {
-
-        const image = canvas.toDataURL("image/png");
-
-        const link = document.createElement("a");
-
-        link.href = image;
-        link.download = "purple-qrcode.png";
-
-        document.body.appendChild(link);
-
-        link.click();
-
-        document.body.removeChild(link);
-
+      if (!canvas) {
+        alert("Please generate a QR code first.");
         return;
       }
 
-      // Fallback if an image was created instead
-      const img = qrContainer.querySelector("img");
+      const label =
+        document.getElementById("labelText").value.trim()
+        || "QR Code";
 
-      if (img) {
+      // Create larger canvas for QR + subtitle
+      const finalCanvas = document.createElement("canvas");
 
-        const link = document.createElement("a");
+      const padding = 30;
+      const labelHeight = 60;
 
-        link.href = img.src;
-        link.download = "purple-qrcode.png";
+      finalCanvas.width = canvas.width + padding * 2;
+      finalCanvas.height = canvas.height + labelHeight + padding * 2;
 
-        document.body.appendChild(link);
+      const ctx = finalCanvas.getContext("2d");
 
-        link.click();
+      // White background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(
+        0,
+        0,
+        finalCanvas.width,
+        finalCanvas.height
+      );
 
-        document.body.removeChild(link);
+      // Draw QR
+      ctx.drawImage(
+        canvas,
+        padding,
+        padding
+      );
 
-        return;
-      }
+      // Draw subtitle
+      ctx.fillStyle = "#7b2cbf";
+      ctx.font = "bold 18px Arial";
+      ctx.textAlign = "center";
 
-      alert("Please generate a QR code first.");
+      ctx.fillText(
+        label,
+        finalCanvas.width / 2,
+        canvas.height + padding + 35
+      );
+
+      // Download
+      const link = document.createElement("a");
+
+      link.download = "purple-qrcode.png";
+
+      link.href = finalCanvas.toDataURL("image/png");
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
     }
 
 
-    // Allow pressing Enter to generate
-    document.getElementById("qrText").addEventListener("keydown", function(event) {
-
-      if (event.key === "Enter") {
-        generateQR();
+    // Press Enter to generate
+    document.getElementById("qrText").addEventListener(
+      "keydown",
+      function(event) {
+        if (event.key === "Enter") {
+          generateQR();
+        }
       }
-
-    });
+    );
 
   </script>
 
