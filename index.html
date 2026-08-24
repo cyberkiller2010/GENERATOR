@@ -121,16 +121,16 @@
         }
         .qr-box {
             background: #ffffff;
-            padding: 20px;
+            padding: 24px;
             border-radius: 16px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             display: inline-block;
         }
         #qrCanvas {
             display: block;
-            width: 280px;
-            height: 280px;
-            border-radius: 8px;
+            width: 300px;
+            height: 300px;
+            border-radius: 4px;
             image-rendering: pixelated;
         }
         .qr-label {
@@ -138,7 +138,7 @@
             font-size: 0.85rem;
             font-weight: 400;
             text-align: center;
-            max-width: 280px;
+            max-width: 300px;
             word-break: break-all;
             padding: 0.4rem 0.8rem;
             background: rgba(0, 0, 0, 0.3);
@@ -197,14 +197,14 @@
                 padding: 0.8rem;
             }
             #qrCanvas {
-                width: 220px;
-                height: 220px;
+                width: 240px;
+                height: 240px;
             }
             .qr-box {
-                padding: 14px;
+                padding: 16px;
             }
             .qr-label {
-                max-width: 220px;
+                max-width: 240px;
                 font-size: 0.75rem;
             }
         }
@@ -246,13 +246,9 @@
 
     <script>
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // QR Code Generator – Pure JavaScript (no library)
-        // Uses the qrcodegen library (minified inline)
+        // SIMPLE QR CODE GENERATOR (Pure JavaScript)
+        // Uses the QR Code generation algorithm from Project Nayuki
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        // ─── QR Code Generator (from qrcodegen.js, minified) ───
-        // This is the reliable QR code generation core
-        // Source: https://github.com/Project-Phoenix/qrcodegen
 
         var qrcodegen = (function() {
             'use strict';
@@ -295,38 +291,6 @@
                 this.drawFormatBits(msk);
                 this.isFunction = null;
             }
-
-            QrCode.drawCodewords = function(data, size, modules) {
-                var i = 0;
-                for (var right = size - 1; right >= 1; right -= 2) {
-                    if (right == 6)
-                        right = 5;
-                    for (var vert = 0; vert < size; vert++) {
-                        for (var j = 0; j < 2; j++) {
-                            var x = right - j;
-                            var y = vert;
-                            if (x < 0)
-                                break;
-                            var upward = ((right + 1) & 2) == 0;
-                            if (upward) {
-                                y = size - 1 - vert;
-                            }
-                            if (!modules[y][x]) {
-                                var dark = false;
-                                if (i < data.length * 8) {
-                                    dark = ((data[i >> 3] >>> (7 - (i & 7))) & 1) != 0;
-                                    i++;
-                                }
-                                modules[y][x] = dark;
-                            }
-                            if (j == 0) {
-                                if (x > 0)
-                                    x--;
-                            }
-                        }
-                    }
-                }
-            };
 
             QrCode.prototype = {
                 drawFunctionPatterns: function() {
@@ -966,7 +930,7 @@
             };
         })();
 
-        // ─── DOM Logic ───
+        // ─── UI Logic ───
         (function() {
             'use strict';
 
@@ -1012,34 +976,34 @@
 
                 clearError();
 
-                // Clear container
+                // Clean up the URL: add https:// if missing
+                let urlToEncode = trimmed;
+                if (!urlToEncode.startsWith('http://') && !urlToEncode.startsWith('https://')) {
+                    urlToEncode = 'https://' + urlToEncode;
+                }
+
                 qrContainer.innerHTML = '';
 
-                // Create white box
                 const box = document.createElement('div');
                 box.className = 'qr-box';
                 qrContainer.appendChild(box);
 
-                // Create canvas
                 const canvas = document.createElement('canvas');
                 canvas.id = 'qrCanvas';
-                canvas.width = 280;
-                canvas.height = 280;
+                canvas.width = 300;
+                canvas.height = 300;
                 box.appendChild(canvas);
 
                 const ctx = canvas.getContext('2d');
 
                 try {
-                    // Generate QR code using the pure JS library
-                    const qr = qrcodegen.encodeText(trimmed, qrcodegen.Ecc.LOW);
+                    const qr = qrcodegen.encodeText(urlToEncode, qrcodegen.Ecc.LOW);
                     const size = qr.size;
                     const moduleSize = canvas.width / size;
 
-                    // Fill white background
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                    // Draw black modules
                     ctx.fillStyle = '#000000';
                     for (let y = 0; y < size; y++) {
                         for (let x = 0; x < size; x++) {
@@ -1054,14 +1018,12 @@
                         }
                     }
 
-                    // Store reference
                     currentCanvas = canvas;
-                    currentText = trimmed;
+                    currentText = urlToEncode;
 
-                    // Add label below
                     const label = document.createElement('div');
                     label.className = 'qr-label';
-                    label.textContent = trimmed;
+                    label.textContent = urlToEncode;
                     qrContainer.appendChild(label);
 
                     qrWrapper.classList.add('has-qr');
@@ -1085,7 +1047,7 @@
 
                 try {
                     const canvas = currentCanvas;
-                    const qrSize = 280;
+                    const qrSize = 300;
                     const padding = 30;
                     const labelSpace = 80;
                     const newWidth = qrSize + padding * 2;
@@ -1096,7 +1058,6 @@
                     paddedCanvas.height = newHeight;
                     const ctx = paddedCanvas.getContext('2d');
 
-                    // Dark gradient background
                     const gradient = ctx.createRadialGradient(
                         newWidth / 2, newHeight / 2 - 20, 0,
                         newWidth / 2, newHeight / 2, newWidth * 0.7
@@ -1106,10 +1067,8 @@
                     ctx.fillStyle = gradient;
                     ctx.fillRect(0, 0, newWidth, newHeight);
 
-                    // Draw the QR code
                     ctx.drawImage(canvas, padding, padding, qrSize, qrSize);
 
-                    // Draw label
                     const fontSize = 22;
                     ctx.font = `${fontSize}px "Segoe UI", "Helvetica Neue", Tahoma, sans-serif`;
                     ctx.textAlign = 'center';
@@ -1134,7 +1093,6 @@
                     ctx.fillStyle = 'rgba(255,255,255,0.3)';
                     ctx.fillText('Scan me', newWidth / 2, padding + qrSize + 12 + fontSize + 8);
 
-                    // Download
                     const dataUrl = paddedCanvas.toDataURL('image/png');
                     const link = document.createElement('a');
                     const filename = `qr-${displayText.slice(0, 20).replace(/[^a-zA-Z0-9]/g, '_') || 'code'}.png`;
@@ -1156,7 +1114,6 @@
                 }
             }
 
-            // ─── Event handling ───
             function debounce(fn, delay) {
                 let timer = null;
                 return function(...args) {
@@ -1212,10 +1169,9 @@
                 }, 50);
             });
 
-            // Init
             setPlaceholder(true);
             setTimeout(() => urlInput.focus(), 300);
-            console.log('✅ QR Code Generator ready (pure JS)');
+            console.log('✅ QR Code Generator ready');
         })();
     </script>
 </body>
