@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QR Code Generator</title>
-    <!-- Use the proven QRCode.js library from CDN (reliable) -->
+    <!-- Using the most popular QR library on the web -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
     </script>
     <style>
@@ -67,7 +67,6 @@
             color: #fff;
             font-size: 1rem;
             outline: none;
-            transition: border-color 0.25s ease;
         }
         .input-group input::placeholder {
             color: rgba(255, 255, 255, 0.3);
@@ -84,7 +83,6 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.15s ease;
             box-shadow: 0 6px 18px rgba(91, 124, 250, 0.35);
             white-space: nowrap;
         }
@@ -110,7 +108,6 @@
             border-radius: 1.8rem;
             background: rgba(255, 255, 255, 0.03);
             border: 1px dashed rgba(255, 255, 255, 0.06);
-            transition: border-color 0.3s ease;
         }
         .qr-wrapper.has-qr {
             border-color: rgba(120, 160, 255, 0.15);
@@ -124,14 +121,6 @@
             gap: 0.8rem;
             width: 100%;
         }
-        #qrContainer canvas,
-        #qrContainer img {
-            display: block;
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-        }
-        /* Wrap QR in white background for contrast */
         .qr-box {
             background: #ffffff;
             padding: 20px;
@@ -172,7 +161,6 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.15s ease;
             box-shadow: 0 6px 18px rgba(45, 212, 191, 0.3);
             margin-top: 0.2rem;
         }
@@ -250,7 +238,6 @@
         (function() {
             'use strict';
 
-            // ─── DOM refs ───
             const urlInput = document.getElementById('urlInput');
             const generateBtn = document.getElementById('generateBtn');
             const qrContainer = document.getElementById('qrContainer');
@@ -258,11 +245,9 @@
             const downloadBtn = document.getElementById('downloadBtn');
             const errorMsg = document.getElementById('errorMsg');
 
-            // ─── State ───
             let qrCodeInstance = null;
             let currentText = '';
 
-            // ─── Helpers ───
             function showError(msg) {
                 errorMsg.textContent = msg || '';
             }
@@ -285,7 +270,6 @@
                 }
             }
 
-            // ─── Generate QR ───
             function generateQR(text) {
                 const trimmed = text.trim();
                 if (!trimmed) {
@@ -293,7 +277,6 @@
                     return false;
                 }
 
-                // Add https:// if missing
                 let urlToEncode = trimmed;
                 if (!urlToEncode.startsWith('http://') && !urlToEncode.startsWith('https://')) {
                     urlToEncode = 'https://' + urlToEncode;
@@ -301,35 +284,30 @@
 
                 clearError();
 
-                // Clear previous QR
                 if (qrCodeInstance) {
-                    try { qrCodeInstance.clear(); } catch (e) { /* ignore */ }
+                    try {
+                        qrCodeInstance.clear();
+                    } catch (e) {}
                     qrCodeInstance = null;
                 }
 
-                // Remove placeholder
                 qrContainer.innerHTML = '';
 
-                // Create a white box wrapper
                 const box = document.createElement('div');
                 box.className = 'qr-box';
                 qrContainer.appendChild(box);
 
                 try {
-                    // ─── Use QRCode.js with proper error handling ───
-                    // Use MEDIUM error correction for better reliability
-                    const eccLevel = urlToEncode.length > 50 ? QRCode.CorrectLevel.M : QRCode.CorrectLevel.L;
-
+                    // --- SIMPLE: Use the QRCode.js library with minimal config ---
                     qrCodeInstance = new QRCode(box, {
                         text: urlToEncode,
                         width: 260,
                         height: 260,
                         colorDark: '#000000',
                         colorLight: '#ffffff',
-                        correctLevel: eccLevel,
+                        correctLevel: QRCode.CorrectLevel.H, // Highest error correction for reliability
                     });
 
-                    // Add label below the QR
                     const label = document.createElement('div');
                     label.className = 'qr-label';
                     label.textContent = urlToEncode;
@@ -343,23 +321,21 @@
                     return true;
                 } catch (err) {
                     console.error('QR generation error:', err);
-                    showError('Failed to generate QR code. Please try a shorter URL.');
+                    showError('Error: ' + err.message);
                     setPlaceholder(true);
                     return false;
                 }
             }
 
-            // ─── Download ───
             function downloadQR() {
                 if (!qrCodeInstance || !currentText) {
                     showError('No QR code to download.');
                     return;
                 }
 
-                // Get the canvas from the container
                 const canvas = qrContainer.querySelector('canvas');
                 if (!canvas) {
-                    showError('Could not find QR image. Please regenerate.');
+                    showError('Could not find QR image.');
                     return;
                 }
 
@@ -375,7 +351,6 @@
                     paddedCanvas.height = newHeight;
                     const ctx = paddedCanvas.getContext('2d');
 
-                    // Dark background
                     const gradient = ctx.createRadialGradient(
                         newWidth / 2, newHeight / 2 - 20, 0,
                         newWidth / 2, newHeight / 2, newWidth * 0.7
@@ -385,10 +360,8 @@
                     ctx.fillStyle = gradient;
                     ctx.fillRect(0, 0, newWidth, newHeight);
 
-                    // Draw QR code
                     ctx.drawImage(canvas, padding, padding, qrSize, qrSize);
 
-                    // Draw label
                     const fontSize = 20;
                     ctx.font = `${fontSize}px "Segoe UI", "Helvetica Neue", Tahoma, sans-serif`;
                     ctx.textAlign = 'center';
@@ -413,7 +386,6 @@
                     ctx.fillStyle = 'rgba(255,255,255,0.25)';
                     ctx.fillText('Scan me', newWidth / 2, padding + qrSize + 12 + fontSize + 4);
 
-                    // Download
                     const dataUrl = paddedCanvas.toDataURL('image/png');
                     const link = document.createElement('a');
                     const filename = `qr-${displayText.slice(0, 20).replace(/[^a-zA-Z0-9]/g, '_') || 'code'}.png`;
@@ -431,82 +403,44 @@
 
                 } catch (err) {
                     console.error('Download error:', err);
-                    showError('Failed to download image. Please try again.');
+                    showError('Download failed: ' + err.message);
                 }
             }
 
-            // ─── Event handlers ───
-            function debounce(fn, delay) {
-                let timer = null;
-                return function(...args) {
-                    clearTimeout(timer);
-                    timer = setTimeout(() => fn.apply(this, args), delay);
-                };
-            }
-
-            const debouncedGenerate = debounce(function() {
-                const text = urlInput.value.trim();
-                if (text && text !== currentText) {
-                    generateQR(text);
-                } else if (!text && currentText) {
-                    setPlaceholder(true);
-                    currentText = '';
-                    if (qrCodeInstance) {
-                        try { qrCodeInstance.clear(); } catch (e) { /* ignore */ }
-                        qrCodeInstance = null;
-                    }
-                }
-            }, 400);
-
-            urlInput.addEventListener('input', function() {
-                clearError();
-                if (!this.value.trim()) {
-                    if (currentText) {
-                        setPlaceholder(true);
-                        currentText = '';
-                        if (qrCodeInstance) {
-                            try { qrCodeInstance.clear(); } catch (e) { /* ignore */ }
-                            qrCodeInstance = null;
-                        }
-                    }
-                    return;
-                }
-                debouncedGenerate();
-            });
-
-            generateBtn.addEventListener('click', function(e) {
-                e.preventDefault();
+            // ─── Events ───
+            function handleGenerate() {
                 const text = urlInput.value.trim();
                 if (text) {
                     generateQR(text);
                 } else {
                     showError('Please enter a URL or text.');
                 }
+            }
+
+            generateBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                handleGenerate();
             });
 
             urlInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    const text = this.value.trim();
-                    if (text) generateQR(text);
-                    else showError('Please enter a URL or text.');
+                    handleGenerate();
                 }
+            });
+
+            urlInput.addEventListener('input', function() {
+                clearError();
+                // Don't auto-generate — let user press Enter or click Generate
             });
 
             downloadBtn.addEventListener('click', downloadQR);
 
-            urlInput.addEventListener('paste', function() {
-                setTimeout(() => {
-                    const text = this.value.trim();
-                    if (text) generateQR(text);
-                }, 50);
-            });
-
             // ─── Init ───
             setPlaceholder(true);
             setTimeout(() => urlInput.focus(), 300);
-            console.log('✅ QR Code Generator ready (using QRCode.js)');
+            console.log('QR Code Generator ready');
         })();
     </script>
 </body>
-</html>
+    </html>
