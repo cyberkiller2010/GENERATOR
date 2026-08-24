@@ -3,58 +3,43 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QR Code Generator – Scannable</title>
-
-    <!-- QRCode.js library -->
+    <title>QR Code – 100% Scannable</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
     </script>
-
     <style>
-        /* ─── Reset & Base ─── */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(145deg, #0b1120 0%, #19233c 100%);
+            background: linear-gradient(145deg, #0b1120, #19233c);
             padding: 1.5rem;
         }
-
         .card {
             background: rgba(255, 255, 255, 0.06);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border-radius: 2.5rem;
             padding: 2.5rem 2.8rem 3rem;
-            max-width: 580px;
+            max-width: 620px;
             width: 100%;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: box-shadow 0.3s ease;
         }
-
-        .card:hover {
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.7);
-        }
-
         .header {
             text-align: center;
             margin-bottom: 2rem;
         }
-
         .header .icon {
             font-size: 2.8rem;
             display: block;
             margin-bottom: 0.4rem;
         }
-
         .header h1 {
             font-size: 1.9rem;
             font-weight: 700;
@@ -63,20 +48,15 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
         .header p {
             color: rgba(255, 255, 255, 0.55);
             font-size: 0.95rem;
-            margin-top: 0.3rem;
         }
-
-        /* ─── Input ─── */
         .input-group {
             display: flex;
             gap: 0.75rem;
             margin-bottom: 2rem;
         }
-
         .input-group input {
             flex: 1;
             padding: 0.9rem 1.2rem;
@@ -88,15 +68,12 @@
             outline: none;
             transition: border-color 0.25s ease;
         }
-
         .input-group input::placeholder {
             color: rgba(255, 255, 255, 0.3);
         }
-
         .input-group input:focus {
             border-color: rgba(120, 160, 255, 0.5);
         }
-
         .input-group .btn-generate {
             padding: 0.9rem 1.8rem;
             border: none;
@@ -110,11 +87,9 @@
             box-shadow: 0 6px 18px rgba(91, 124, 250, 0.35);
             white-space: nowrap;
         }
-
         .input-group .btn-generate:hover {
             transform: translateY(-2px);
         }
-
         .error-msg {
             color: #f87171;
             font-size: 0.8rem;
@@ -123,8 +98,6 @@
             margin-top: -0.8rem;
             margin-bottom: 0.6rem;
         }
-
-        /* ─── QR Code Container (FIXED: white background for scannability) ─── */
         .qr-wrapper {
             display: flex;
             flex-direction: column;
@@ -138,13 +111,10 @@
             border: 1px dashed rgba(255, 255, 255, 0.06);
             transition: border-color 0.3s ease;
         }
-
         .qr-wrapper.has-qr {
             border-color: rgba(120, 160, 255, 0.15);
             background: rgba(255, 255, 255, 0.04);
         }
-
-        /* The actual QR container: white background, rounded, with padding */
         #qrContainer {
             display: flex;
             flex-direction: column;
@@ -154,55 +124,44 @@
             width: 100%;
             gap: 0.8rem;
         }
-
-        /* White box around the QR code to ensure perfect contrast */
+        /* White box around the QR – adds extra margin for scanner detection */
         .qr-box {
             background: #ffffff;
-            padding: 16px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: inline-block;
         }
-
         #qrContainer canvas,
         #qrContainer img {
             display: block;
-            width: 220px;
-            height: 220px;
+            width: 300px;
+            height: 300px;
             border-radius: 8px;
         }
-
-        /* Label below the QR (dark text on white background for visibility) */
         .qr-label {
-            color: #1a1a2e;
-            font-size: 0.85rem;
-            font-weight: 500;
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 400;
             text-align: center;
-            max-width: 260px;
+            max-width: 300px;
             word-break: break-all;
-            padding: 0.4rem 0.5rem;
-            background: rgba(255, 255, 255, 0.9);
+            padding: 0.4rem 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 8px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
         .qr-placeholder {
             color: rgba(255, 255, 255, 0.25);
             font-size: 0.95rem;
             text-align: center;
             padding: 1.5rem 0;
         }
-
         .qr-placeholder span {
             display: block;
             font-size: 2.8rem;
             margin-bottom: 0.4rem;
         }
-
-        /* ─── Download Button ─── */
         .btn-download {
             display: none;
             width: 100%;
@@ -218,15 +177,12 @@
             box-shadow: 0 6px 18px rgba(45, 212, 191, 0.3);
             margin-top: 0.2rem;
         }
-
         .btn-download.visible {
             display: block;
         }
-
         .btn-download:hover {
             transform: translateY(-2px);
         }
-
         .btn-download svg {
             display: inline-block;
             vertical-align: middle;
@@ -235,7 +191,6 @@
             height: 18px;
             fill: currentColor;
         }
-
         @media (max-width: 500px) {
             .card {
                 padding: 1.8rem 1.4rem 2.2rem;
@@ -250,35 +205,26 @@
             }
             #qrContainer canvas,
             #qrContainer img {
-                width: 180px;
-                height: 180px;
+                width: 220px;
+                height: 220px;
+            }
+            .qr-box {
+                padding: 16px;
             }
             .qr-label {
-                max-width: 200px;
-                font-size: 0.75rem;
-            }
-        }
-
-        @media (max-width: 380px) {
-            .card {
-                padding: 1.2rem 0.8rem 1.6rem;
-            }
-            #qrContainer canvas,
-            #qrContainer img {
-                width: 150px;
-                height: 150px;
+                max-width: 220px;
+                font-size: 0.8rem;
             }
         }
     </style>
 </head>
 
 <body>
-
     <div class="card">
         <div class="header">
             <span class="icon">📱</span>
             <h1>QR Code Generator</h1>
-            <p>100% scannable — black on white</p>
+            <p>Guaranteed scannable – large, clear, black on white</p>
         </div>
 
         <div class="input-group">
@@ -363,23 +309,23 @@
                 // Clear container
                 qrContainer.innerHTML = '';
 
-                // Create a white box wrapper for the QR code
+                // Create white box
                 const box = document.createElement('div');
                 box.className = 'qr-box';
                 qrContainer.appendChild(box);
 
                 try {
-                    // ─── FIX: Standard black on white for 100% scannability ───
+                    // --- FIX: larger size, lower error correction (L) for better readability ---
                     qrCodeInstance = new QRCode(box, {
                         text: trimmed,
-                        width: 220,
-                        height: 220,
-                        colorDark: '#000000',   // BLACK squares
-                        colorLight: '#ffffff',   // WHITE background
-                        correctLevel: QRCode.CorrectLevel.H,
+                        width: 300,
+                        height: 300,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.L   // lowest = fewest modules = larger blocks
                     });
 
-                    // Add the label below the QR (inside the container, but outside the box)
+                    // Label below the QR
                     const label = document.createElement('div');
                     label.className = 'qr-label';
                     label.textContent = trimmed;
@@ -402,7 +348,7 @@
                 }
             }
 
-            // ─── Download: now the QR is black on white, we add a dark background ───
+            // ─── Download (includes the label and a stylish dark background) ───
             function downloadQR() {
                 if (!qrCodeInstance || !currentText) {
                     showError('No QR code to download.');
@@ -416,9 +362,9 @@
                 }
 
                 try {
-                    const qrSize = 220;
+                    const qrSize = 300;
                     const padding = 30;
-                    const labelSpace = 70;
+                    const labelSpace = 80;
                     const newWidth = qrSize + padding * 2;
                     const newHeight = qrSize + padding * 2 + labelSpace;
 
@@ -437,11 +383,11 @@
                     ctx.fillStyle = gradient;
                     ctx.fillRect(0, 0, newWidth, newHeight);
 
-                    // Draw the QR code (which is already black on white)
+                    // Draw the QR code (black on white)
                     ctx.drawImage(canvas, padding, padding, qrSize, qrSize);
 
-                    // Draw the label text
-                    const fontSize = 20;
+                    // Draw label
+                    const fontSize = 22;
                     ctx.font = `${fontSize}px "Segoe UI", "Helvetica Neue", Tahoma, sans-serif`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
@@ -461,10 +407,11 @@
                     ctx.fillText(displayText, newWidth / 2, padding + qrSize + 12);
                     ctx.shadowBlur = 0;
 
-                    ctx.font = `12px "Segoe UI", "Helvetica Neue", Tahoma, sans-serif`;
-                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-                    ctx.fillText('Scan me', newWidth / 2, padding + qrSize + 12 + fontSize + 6);
+                    ctx.font = `14px "Segoe UI", "Helvetica Neue", Tahoma, sans-serif`;
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.fillText('Scan me', newWidth / 2, padding + qrSize + 12 + fontSize + 8);
 
+                    // Download
                     const dataUrl = paddedCanvas.toDataURL('image/png');
                     const link = document.createElement('a');
                     const filename = `qr-${displayText.slice(0, 20).replace(/[^a-zA-Z0-9]/g, '_') || 'code'}.png`;
@@ -486,7 +433,7 @@
                 }
             }
 
-            // ─── Event handlers ───
+            // ─── Event handling (same as before) ───
             function debounce(fn, delay) {
                 let timer = null;
                 return function(...args) {
@@ -562,10 +509,10 @@
                 }
             });
 
-            // ─── Init ───
+            // Init
             setPlaceholder(true);
             setTimeout(() => urlInput.focus(), 300);
-            console.log('✅ Scannable QR Generator ready (black on white)');
+            console.log('✅ Scannable QR ready (large, low EC, black/white)');
         })();
     </script>
 </body>
